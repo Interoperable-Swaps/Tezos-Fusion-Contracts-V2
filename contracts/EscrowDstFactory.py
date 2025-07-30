@@ -242,7 +242,7 @@ if "main" in __name__:
         destinationEscrowFactory.deployEscrowDst(sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10,
             amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
             taker = Resolver.address,
-            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob)
+            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100))
 
 
         # destinationEscrow = main.EscrowDst(
