@@ -1,3 +1,4 @@
+from importlib.metadata import entry_points
 # Destination Escrow Factory.
 import smartpy as sp
 
@@ -194,7 +195,19 @@ def main():
             self.data.admin = init_params.admin
 
 
-        #TODO: Add Amount Check for Tez
+
+        @sp.entry_point
+        def changeAdmin(self, newAdmin):
+
+            sp.cast(newAdmin, sp.address)
+
+            assert sp.sender == self.data.admin
+
+            self.data.admin = newAdmin
+
+
+        # TODO: Add Amount Check for Tez
+        # TODO: Balance Transfer to Escrow
         @sp.entry_point
         def deployEscrowDst(self, params):
 

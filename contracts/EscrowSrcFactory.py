@@ -225,8 +225,18 @@ def main():
 
             self.data.admin = init_params.admin
 
+        @sp.entry_point
+        def changeAdmin(self, newAdmin):
 
-        #TODO: Add Amount Check for Tez
+            sp.cast(newAdmin, sp.address)
+
+            assert sp.sender == self.data.admin
+
+            self.data.admin = newAdmin
+
+
+        # TODO: Add Amount Check for Tez
+        # TODO: Balance Transfer to Escrow
         @sp.entry_point
         def deployEscrowSrc(self, params):
 
