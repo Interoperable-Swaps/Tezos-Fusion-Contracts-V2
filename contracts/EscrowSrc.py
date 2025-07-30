@@ -76,6 +76,56 @@ def main():
         def onlyValidSecret(self, secret):
             return self.data.hash == sp.keccak(secret)
 
+        @sp.private(with_operations=True,with_storage="read-only")
+        def TransferTokens(self, receiver):
+            if self.data.tokenType:
+                transferHandle = sp.contract(
+                    t.transfer_params,
+                    self.data.token,
+                    "transfer"
+                )
+
+                TransferParam = [
+                            sp.record(
+                                from_ = sp.self_address,
+                                txs = [
+                                    sp.record(
+                                        to_         = receiver,
+                                        token_id    = self.data.tokenId,
+                                        amount      = self.data.amount
+                                    )
+                                ]
+                            )
+                        ]
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+            else:
+                TransferParam = sp.record(
+                    from_ = sp.self_address,
+                    to_ = receiver,
+                    value = self.data.amount
+                )
+
+                transferHandle = sp.contract(
+                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
+                    ("from_ as from", ("to_ as to", "value"))
+                    ),
+                    self.data.token,
+                    "transfer"
+                    )
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+
         # Functions
         # withdraw
         # cancel
@@ -97,53 +147,7 @@ def main():
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Taker
-            if self.data.tokenType:
-                transferHandle = sp.contract(
-                    t.transfer_params,
-                    self.data.token,
-                    "transfer"
-                )
-
-                TransferParam = [
-                            sp.record(
-                                from_ = sp.self_address,
-                                txs = [
-                                    sp.record(
-                                        to_         = self.data.taker,
-                                        token_id    = self.data.tokenId,
-                                        amount      = self.data.amount
-                                    )
-                                ]
-                            )
-                        ]
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
-
-            else:
-
-                TransferParam = sp.record(
-                    from_ = sp.self_address,
-                    to_ = self.data.taker,
-                    value = self.data.amount
-                )
-
-                transferHandle = sp.contract(
-                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
-                    ("from_ as from", ("to_ as to", "value"))
-                    ),
-                    self.data.token,
-                    "transfer"
-                    )
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
+            self.TransferTokens(self.data.taker)
             # Transfer native tokens to the Taker
             sp.send(self.data.taker, self.data.safetyDeposit)
 
@@ -168,53 +172,7 @@ def main():
             assert self.onlyValidSecret(param.secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Taker
-            if self.data.tokenType:
-                transferHandle = sp.contract(
-                    t.transfer_params,
-                    self.data.token,
-                    "transfer"
-                )
-
-                TransferParam = [
-                            sp.record(
-                                from_ = sp.self_address,
-                                txs = [
-                                    sp.record(
-                                        to_         = self.data.taker,
-                                        token_id    = self.data.tokenId,
-                                        amount      = self.data.amount
-                                    )
-                                ]
-                            )
-                        ]
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
-
-            else:
-
-                TransferParam = sp.record(
-                    from_ = sp.self_address,
-                    to_ = self.data.taker,
-                    value = self.data.amount
-                )
-
-                transferHandle = sp.contract(
-                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
-                    ("from_ as from", ("to_ as to", "value"))
-                    ),
-                    self.data.token,
-                    "transfer"
-                    )
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
+            self.TransferTokens(param.target)
             # Transfer native tokens to the Target
             sp.send(self.data.taker, self.data.safetyDeposit)
 
@@ -230,53 +188,7 @@ def main():
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Taker
-            if self.data.tokenType:
-                transferHandle = sp.contract(
-                    t.transfer_params,
-                    self.data.token,
-                    "transfer"
-                )
-
-                TransferParam = [
-                            sp.record(
-                                from_ = sp.self_address,
-                                txs = [
-                                    sp.record(
-                                        to_         = self.data.taker,
-                                        token_id    = self.data.tokenId,
-                                        amount      = self.data.amount
-                                    )
-                                ]
-                            )
-                        ]
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
-
-            else:
-
-                TransferParam = sp.record(
-                    from_ = sp.self_address,
-                    to_ = self.data.taker,
-                    value = self.data.amount
-                )
-
-                transferHandle = sp.contract(
-                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
-                    ("from_ as from", ("to_ as to", "value"))
-                    ),
-                    self.data.token,
-                    "transfer"
-                    )
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
+            self.TransferTokens(self.data.taker)
             # Transfer native tokens to the Sender
             sp.send(sp.sender, self.data.safetyDeposit)
 
@@ -289,53 +201,7 @@ def main():
             assert self.onlyAfter(self.data.SrcCancellation), "AFTER_CANCEL"
 
             # Transfer Tokens to the Maker
-            if self.data.tokenType:
-                transferHandle = sp.contract(
-                    t.transfer_params,
-                    self.data.token,
-                    "transfer"
-                )
-
-                TransferParam = [
-                            sp.record(
-                                from_ = sp.self_address,
-                                txs = [
-                                    sp.record(
-                                        to_         = self.data.maker,
-                                        token_id    = self.data.tokenId,
-                                        amount      = self.data.amount
-                                    )
-                                ]
-                            )
-                        ]
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
-
-            else:
-
-                TransferParam = sp.record(
-                    from_ = sp.self_address,
-                    to_ = self.data.maker,
-                    value = self.data.amount
-                )
-
-                transferHandle = sp.contract(
-                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
-                    ("from_ as from", ("to_ as to", "value"))
-                    ),
-                    self.data.token,
-                    "transfer"
-                    )
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
+            self.TransferTokens(self.data.maker)
             # Transfer native tokens to the Taker
             sp.send(sp.sender, self.data.safetyDeposit)
 
@@ -347,53 +213,7 @@ def main():
             assert self.onlyAfter(self.data.SrcPublicCancellation), "AFTER_PUBLIC_CANCEL"
 
             # Transfer Tokens to the Maker
-            if self.data.tokenType:
-                transferHandle = sp.contract(
-                    t.transfer_params,
-                    self.data.token,
-                    "transfer"
-                )
-
-                TransferParam = [
-                            sp.record(
-                                from_ = sp.self_address,
-                                txs = [
-                                    sp.record(
-                                        to_         = self.data.maker,
-                                        token_id    = self.data.tokenId,
-                                        amount      = self.data.amount
-                                    )
-                                ]
-                            )
-                        ]
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
-
-            else:
-
-                TransferParam = sp.record(
-                    from_ = sp.self_address,
-                    to_ = self.data.maker,
-                    value = self.data.amount
-                )
-
-                transferHandle = sp.contract(
-                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
-                    ("from_ as from", ("to_ as to", "value"))
-                    ),
-                    self.data.token,
-                    "transfer"
-                    )
-
-                match transferHandle:
-                    case Some(contract):
-                        sp.transfer(TransferParam, sp.mutez(0), contract)
-                    case None:
-                        sp.trace("Failed to find contract")
+            self.TransferTokens(self.data.maker)
             # Transfer native tokens to the Taker
             sp.send(sp.sender, self.data.safetyDeposit)
 
@@ -433,7 +253,7 @@ if "main" in __name__:
 
         # scenario.h2("Entering Invalid Secret")
         # password = sp.pack("A StrinAg")
-        # c1.check(secret = password, value = 100, _valid=False)
+        # c1.withdraw(secret = password, _valid=False)
 
         # scenario.h2("Entering Valid Secret")
         # c1.check(secret = secret, value = 100)
