@@ -3,7 +3,7 @@ import smartpy as sp
 
 @sp.module
 def main():
-    class DestinationEscrow(sp.Contract):
+    class EscrowDst(sp.Contract):
 
         def __init__(self, orderHash: sp.bytes, hash: sp.bytes,
             maker: sp.address, taker: sp.address,
@@ -32,7 +32,7 @@ def main():
             self.data.tokenType = tokenType
             self.data.amount = amount
             self.data.safetyDeposit = safetyDeposit
-
+            # TimeLocks Data
             self.data.startTime = sp.now
             self.data.DstWithdrawal = DstWithdrawal
             self.data.DstPublicWithdrawal = DstPublicWithdrawal
@@ -76,7 +76,10 @@ def main():
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Maker
+
             # Transfer native tokens to the Taker
+            sp.send(self.data.taker, self.data.safetyDeposit)
+
 
         # ---- contract deployed --/-- finality --/-- private withdrawal --/-- PUBLIC WITHDRAWAL --/-- private cancellation ----
         @sp.entry_point
@@ -89,8 +92,10 @@ def main():
 
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
-             # Transfer Tokens to the Maker
-             # Transfer native tokens to the Taker
+            # Transfer Tokens to the Maker
+
+            # Transfer native tokens to the sp.sender
+            sp.send(sp.sender, self.data.safetyDeposit)
 
         # ---- contract deployed --/-- finality --/-- private withdrawal --/-- public withdrawal --/-- PRIVATE CANCELLATION ----
         @sp.entry_point
@@ -100,9 +105,11 @@ def main():
 
             assert self.onlyAfter(self.data.DstCancellation), "AFTER_CANCEL"
 
-             # Transfer Tokens to the Taker
-             # Transfer native tokens to the Taker
+            # Transfer Tokens to the Taker
 
+
+            # Transfer native tokens to the Taker
+            sp.send(self.data.taker, self.data.safetyDeposit)
 
 
 if "main" in __name__:
@@ -121,7 +128,7 @@ if "main" in __name__:
         secret = sp.bytes("0xa13c7be0e8f1b5b9926dc25f13c31476598e3e6012592f4e82633eb0be87a028")
         secret_hash = sp.keccak(secret)
 
-        destinationEscrow = main.DestinationEscrow(
+        destinationEscrow = main.EscrowDst(
             orderHash,
             secret_hash,
             Maker.address,
