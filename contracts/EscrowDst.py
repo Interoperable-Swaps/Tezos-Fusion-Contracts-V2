@@ -24,38 +24,31 @@ def main():
 
     class EscrowDst(sp.Contract):
 
-        def __init__(self, orderHash: sp.bytes, hash: sp.bytes,
-            maker: sp.address, taker: sp.address,
-            token :sp.address, tokenId : sp.nat, tokenType : sp.bool,
-            amount: sp.nat, safetyDeposit : sp.mutez,
-            DstWithdrawal: sp.nat, DstPublicWithdrawal: sp.nat, DstCancellation: sp.nat
-            ):
+        def __init__(self, init_params):
 
             # Add Rescue Delay Function
             # TokenHolder Access for public withdraw
-            # sp.cast(
-            #     init_params,
-            #     sp.record(orderHash=sp.bytes, hash=sp.bytes, maker=sp.address, taker=sp.address,
-            #         tokenAddress = sp.address, tokenId = sp.nat, tokenType = sp.bool,
-            #         amount=sp.nat, safetyDeposit = sp.mutez).layout(
-            #         ("secret", "value")
-            #     ),
-            # )
+            sp.cast(
+                init_params,
+                sp.record(DstCancellation = sp.nat, DstPublicWithdrawal = sp.nat, DstWithdrawal = sp.nat,
+                    amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes, safetyDeposit = sp.mutez,
+                    taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
+            )
 
-            self.data.orderHash = orderHash
-            self.data.hash = hash
-            self.data.maker = maker
-            self.data.taker = taker
-            self.data.token = token
-            self.data.tokenId = tokenId
-            self.data.tokenType = tokenType
-            self.data.amount = amount
-            self.data.safetyDeposit = safetyDeposit
+            self.data.orderHash = init_params.orderHash
+            self.data.hash = init_params.hash
+            self.data.maker = init_params.maker
+            self.data.taker = init_params.taker
+            self.data.token = init_params.token
+            self.data.tokenId = init_params.tokenId
+            self.data.tokenType = init_params.tokenType
+            self.data.amount = init_params.amount
+            self.data.safetyDeposit = init_params.safetyDeposit
             # TimeLocks Data
             self.data.startTime = sp.now
-            self.data.DstWithdrawal = DstWithdrawal
-            self.data.DstPublicWithdrawal = DstPublicWithdrawal
-            self.data.DstCancellation = DstCancellation
+            self.data.DstWithdrawal = init_params.DstWithdrawal
+            self.data.DstPublicWithdrawal = init_params.DstPublicWithdrawal
+            self.data.DstCancellation = init_params.DstCancellation
 
 
         # Private Functions for Checking
@@ -197,18 +190,10 @@ if "main" in __name__:
         secret_hash = sp.keccak(secret)
 
         destinationEscrow = main.EscrowDst(
-            orderHash,
-            secret_hash,
-            Maker.address,
-            Resolver.address,
-            Token.address,
-            0,
-            False,
-            100,
-            sp.tez(10),
-            10,
-            20,
-            20
+            sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10,
+            amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
+            taker = Resolver.address,
+            token = Token.address, tokenId = 0, tokenType = False)
         )
         scenario.h1("Destination Escrow")
         scenario += destinationEscrow
