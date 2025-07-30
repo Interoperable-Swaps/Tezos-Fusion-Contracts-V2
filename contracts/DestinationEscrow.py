@@ -1,4 +1,3 @@
-from importlib.metadata import entry_points
 # Destination Escrow.
 import smartpy as sp
 
