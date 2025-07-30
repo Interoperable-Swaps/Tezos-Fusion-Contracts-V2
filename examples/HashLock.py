@@ -27,7 +27,7 @@ if "main" in __name__:
     def test():
         scenario = sp.test_scenario("HashLock Example")
 
-        secret = sp.pack("TezosFusion+")
+        secret = sp.bytes("0xa13c7be0e8f1b5b9926dc25f13c31476598e3e6012592f4e82633eb0be87a028")
         secret_hash = sp.keccak(secret)
 
         c1 = main.HashLock(secret_hash)
