@@ -24,39 +24,33 @@ def main():
 
     class EscrowSrc(sp.Contract):
 
-        def __init__(self, orderHash: sp.bytes, hash: sp.bytes,
-            maker: sp.address, taker: sp.address,
-            token :sp.address, tokenId : sp.nat, tokenType : sp.bool,
-            amount: sp.nat, safetyDeposit : sp.mutez,
-            SrcWithdrawal: sp.nat, SrcPublicWithdrawal: sp.nat, SrcCancellation: sp.nat, SrcPublicCancellation: sp.nat
-            ):
+        def __init__(self, init_params):
 
             # Add Rescue Delay Function
             # TokenHolder Access for public withdraw
-            # sp.cast(
-            #     init_params,
-            #     sp.record(orderHash=sp.bytes, hash=sp.bytes, maker=sp.address, taker=sp.address,
-            #         tokenAddress = sp.address, tokenId = sp.nat, tokenType = sp.bool,
-            #         amount=sp.nat, safetyDeposit = sp.mutez).layout(
-            #         ("secret", "value")
-            #     ),
-            # )
+            sp.cast(
+                init_params,
+                sp.record(SrcCancellation = sp.nat, SrcPublicCancellation = sp.nat, SrcPublicWithdrawal = sp.nat, SrcWithdrawal = sp.nat,
+                    amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes, safetyDeposit = sp.mutez,
+                    taker = sp.address,
+                    token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
+            )
 
-            self.data.orderHash = orderHash
-            self.data.hash = hash
-            self.data.maker = maker
-            self.data.taker = taker
-            self.data.token = token
-            self.data.tokenId = tokenId
-            self.data.tokenType = tokenType
-            self.data.amount = amount
-            self.data.safetyDeposit = safetyDeposit
+            self.data.orderHash = init_params.orderHash
+            self.data.hash = init_params.hash
+            self.data.maker = init_params.maker
+            self.data.taker = init_params.taker
+            self.data.token = init_params.token
+            self.data.tokenId = init_params.tokenId
+            self.data.tokenType = init_params.tokenType
+            self.data.amount = init_params.amount
+            self.data.safetyDeposit = init_params.safetyDeposit
             # TimeLocks Data
             self.data.startTime = sp.now
-            self.data.SrcWithdrawal = SrcWithdrawal
-            self.data.SrcPublicWithdrawal = SrcPublicWithdrawal
-            self.data.SrcCancellation = SrcCancellation
-            self.data.SrcPublicCancellation = SrcPublicCancellation
+            self.data.SrcWithdrawal = init_params.SrcWithdrawal
+            self.data.SrcPublicWithdrawal = init_params.SrcPublicWithdrawal
+            self.data.SrcCancellation = init_params.SrcCancellation
+            self.data.SrcPublicCancellation = init_params.SrcPublicCancellation
 
 
         # Private Functions for Checking
@@ -233,21 +227,17 @@ if "main" in __name__:
         secret = sp.bytes("0xa13c7be0e8f1b5b9926dc25f13c31476598e3e6012592f4e82633eb0be87a028")
         secret_hash = sp.keccak(secret)
 
-        SourceEscrow = main.EscrowSrc(
-            orderHash,
-            secret_hash,
-            Maker.address,
-            Resolver.address,
-            Token.address,
-            0,
-            False,
-            100,
-            sp.tez(10),
-            10,
-            20,
-            20,
-            25
-        )
+        # init_params = sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
+        # amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
+        # taker = Resolver.address,
+        # token = Token.address, tokenId = 0, tokenType = False)
+
+        SourceEscrow = main.EscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
+        amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
+        taker = Resolver.address,
+        token = Token.address, tokenId = 0, tokenType = False))
+
+
         scenario.h1("Source Escrow")
         scenario += SourceEscrow
 
