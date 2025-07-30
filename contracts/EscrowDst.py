@@ -2,12 +2,31 @@
 import smartpy as sp
 
 @sp.module
+def t():
+    tx: type = sp.record(
+        to_=sp.address,
+        token_id=sp.nat,
+        amount=sp.nat,
+    ).layout(("to_", ("token_id", "amount")))
+
+    transfer_batch: type = sp.record(
+        from_=sp.address,
+        txs=list[tx],
+    ).layout(("from_", "txs"))
+
+    transfer_params: type = list[transfer_batch]
+
+
+@sp.module
 def main():
+
+    import t
+
     class EscrowDst(sp.Contract):
 
         def __init__(self, orderHash: sp.bytes, hash: sp.bytes,
             maker: sp.address, taker: sp.address,
-            tokenAddress :sp.address, tokenId : sp.nat, tokenType : sp.bool,
+            token :sp.address, tokenId : sp.nat, tokenType : sp.bool,
             amount: sp.nat, safetyDeposit : sp.mutez,
             DstWithdrawal: sp.nat, DstPublicWithdrawal: sp.nat, DstCancellation: sp.nat
             ):
@@ -27,7 +46,7 @@ def main():
             self.data.hash = hash
             self.data.maker = maker
             self.data.taker = taker
-            self.data.tokenAddress = tokenAddress
+            self.data.token = token
             self.data.tokenId = tokenId
             self.data.tokenType = tokenType
             self.data.amount = amount
@@ -59,7 +78,7 @@ def main():
         # Functions
         # withdraw
         # cancel
-        # rescue Funds
+        # TODO: rescue Funds
         # publicWithdraw
 
         # ---- contract deployed --/-- finality --/-- PRIVATE WITHDRAWAL --/-- PUBLIC WITHDRAWAL --/-- private cancellation ----
@@ -76,6 +95,53 @@ def main():
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Maker
+            if self.data.tokenType:
+                transferHandle = sp.contract(
+                    t.transfer_params,
+                    self.data.token,
+                    "transfer"
+                )
+
+                TransferParam = [
+                            sp.record(
+                                from_ = sp.self_address,
+                                txs = [
+                                    sp.record(
+                                        to_         = self.data.maker,
+                                        token_id    = self.data.tokenId,
+                                        amount      = self.data.amount
+                                    )
+                                ]
+                            )
+                        ]
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+            else:
+
+                TransferParam = sp.record(
+                    from_ = sp.self_address,
+                    to_ = self.data.maker,
+                    value = self.data.amount
+                )
+
+                transferHandle = sp.contract(
+                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
+                    ("from_ as from", ("to_ as to", "value"))
+                    ),
+                    self.data.token,
+                    "transfer"
+                    )
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
 
             # Transfer native tokens to the Taker
             sp.send(self.data.taker, self.data.safetyDeposit)
@@ -93,6 +159,53 @@ def main():
             assert self.onlyValidSecret(secret), "INVALID_SECRET"
 
             # Transfer Tokens to the Maker
+            if self.data.tokenType:
+                transferHandle = sp.contract(
+                    t.transfer_params,
+                    self.data.token,
+                    "transfer"
+                )
+
+                TransferParam = [
+                            sp.record(
+                                from_ = sp.self_address,
+                                txs = [
+                                    sp.record(
+                                        to_         = self.data.maker,
+                                        token_id    = self.data.tokenId,
+                                        amount      = self.data.amount
+                                    )
+                                ]
+                            )
+                        ]
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+            else:
+
+                TransferParam = sp.record(
+                    from_ = sp.self_address,
+                    to_ = self.data.maker,
+                    value = self.data.amount
+                )
+
+                transferHandle = sp.contract(
+                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
+                    ("from_ as from", ("to_ as to", "value"))
+                    ),
+                    self.data.token,
+                    "transfer"
+                    )
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
 
             # Transfer native tokens to the sp.sender
             sp.send(sp.sender, self.data.safetyDeposit)
@@ -106,7 +219,53 @@ def main():
             assert self.onlyAfter(self.data.DstCancellation), "AFTER_CANCEL"
 
             # Transfer Tokens to the Taker
+            if self.data.tokenType:
+                transferHandle = sp.contract(
+                    t.transfer_params,
+                    self.data.token,
+                    "transfer"
+                )
 
+                TransferParam = [
+                            sp.record(
+                                from_ = sp.self_address,
+                                txs = [
+                                    sp.record(
+                                        to_         = self.data.taker,
+                                        token_id    = self.data.tokenId,
+                                        amount      = self.data.amount
+                                    )
+                                ]
+                            )
+                        ]
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+            else:
+
+                TransferParam = sp.record(
+                    from_ = sp.self_address,
+                    to_ = self.data.taker,
+                    value = self.data.amount
+                )
+
+                transferHandle = sp.contract(
+                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
+                    ("from_ as from", ("to_ as to", "value"))
+                    ),
+                    self.data.token,
+                    "transfer"
+                    )
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
 
             # Transfer native tokens to the Taker
             sp.send(self.data.taker, self.data.safetyDeposit)
