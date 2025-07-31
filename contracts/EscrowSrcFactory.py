@@ -224,10 +224,11 @@ def main():
             # TokenHolder Access for public withdraw
             sp.cast(
                 init_params,
-                sp.record(admin = sp.address)
+                sp.record(admin = sp.address, LOP = sp.address)
             )
 
             self.data.admin = init_params.admin
+            self.data.LOP = init_params.LOP
 
         @sp.private()
         def CheckTimeStamps(self, SrcPublicCancellation, SrcCancellation, SrcPublicWithdrawal,SrcWithdrawal):
@@ -351,6 +352,7 @@ if "main" in __name__:
         Resolver = sp.test_account("Resolver")
         Bob = sp.test_account("Bob")
         Token = sp.test_account("Token")
+        LOP = sp.test_account("LOP")
 
         orderHash = sp.pack("OrderId-1")
         secret = sp.bytes("0xa13c7be0e8f1b5b9926dc25f13c31476598e3e6012592f4e82633eb0be87a028")
@@ -358,7 +360,7 @@ if "main" in __name__:
 
         scenario.h1("Source Escrow Factory")
 
-        sourceEscrowFactory = main.EscrowSrcFactory(sp.record(admin = Bob.address))
+        sourceEscrowFactory = main.EscrowSrcFactory(sp.record(admin = Bob.address, LOP = LOP.address))
         scenario += sourceEscrowFactory
 
         sourceEscrowFactory.deployEscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
