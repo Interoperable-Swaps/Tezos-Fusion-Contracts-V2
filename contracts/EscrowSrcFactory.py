@@ -225,6 +225,21 @@ def main():
 
             self.data.admin = init_params.admin
 
+        @sp.private()
+        def CheckTimeStamps(self, SrcPublicCancellation, SrcCancellation, SrcPublicWithdrawal,SrcWithdrawal):
+
+            if SrcPublicCancellation > SrcCancellation:
+                if SrcCancellation > SrcPublicWithdrawal:
+                    if SrcPublicWithdrawal > SrcWithdrawal:
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+
+
         @sp.private(with_operations=True)
         def TransferTokens(self, sender, receiver, amount, tokenAddress,id, faTwoFlag):
 
@@ -296,6 +311,9 @@ def main():
             )
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
+            assert self.CheckTimeStamps(sp.record(SrcCancellation = params.SrcCancellation, SrcPublicCancellation = params.SrcPublicCancellation, SrcPublicWithdrawal = params.SrcPublicWithdrawal,
+            SrcWithdrawal = params.SrcWithdrawal)), "INVALID_TIMESTAMP"
 
             self.TransferTokens(sp.record(
                 sender = sp.sender, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
