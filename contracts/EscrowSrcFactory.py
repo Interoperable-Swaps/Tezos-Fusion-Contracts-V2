@@ -240,17 +240,17 @@ def main():
         @sp.entry_point
         def deployEscrowSrc(self, params):
 
-            assert sp.sender == self.data.admin
-
             sp.cast(
                 params,
                 EscrowInitParams
             )
 
+            assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
             newContract = sp.create_contract(
                 EscrowSrc,
                 None,
-                sp.tez(0),
+                sp.amount,
                 sp.record(
                     SrcCancellation = params.SrcCancellation, SrcPublicCancellation = params.SrcPublicCancellation, SrcPublicWithdrawal = params.SrcPublicWithdrawal,
                     SrcWithdrawal = params.SrcWithdrawal, amount = params.amount, hash = params.hash, maker = params.maker, orderHash = params.orderHash,
@@ -283,7 +283,7 @@ if "main" in __name__:
         sourceEscrowFactory.deployEscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
         amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
         taker = Resolver.address,
-        token = Token.address, tokenId = 0, tokenType = False), _sender = Bob)
+        token = Token.address, tokenId = 0, tokenType = False), _amount = sp.tez(1))
 
         # SourceEscrow = main.EscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
         # amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),

@@ -211,17 +211,17 @@ def main():
         @sp.entry_point
         def deployEscrowDst(self, params):
 
-            assert sp.sender == self.data.admin
-
             sp.cast(
                 params,
                 EscrowInitParams
             )
 
+            assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
             newContract = sp.create_contract(
                 EscrowDst,
                 None,
-                sp.tez(0),
+                sp.amount,
                 sp.record(
                     DstCancellation = params.DstCancellation, DstPublicWithdrawal = params.DstPublicWithdrawal, DstWithdrawal = params.DstWithdrawal,
                     amount = params.amount, hash = params.hash, maker = params.maker, orderHash = params.orderHash, safetyDeposit = params.safetyDeposit,
@@ -255,7 +255,7 @@ if "main" in __name__:
         destinationEscrowFactory.deployEscrowDst(sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10,
             amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
             taker = Resolver.address,
-            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100))
+            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100), _amount = sp.tez(1))
 
 
         # destinationEscrow = main.EscrowDst(
