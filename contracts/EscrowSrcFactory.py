@@ -30,6 +30,10 @@ def main():
         amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes,
         safetyDeposit = sp.mutez, taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
 
+    EscrowCallParams: type = sp.record(SrcCancellation = sp.nat, SrcPublicCancellation = sp.nat, SrcPublicWithdrawal = sp.nat, SrcWithdrawal = sp.nat,
+        amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes,
+        safetyDeposit = sp.mutez, taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
+
     class EscrowSrc(sp.Contract):
 
         def __init__(self, init_params):
@@ -307,7 +311,7 @@ def main():
 
             sp.cast(
                 params,
-                EscrowInitParams
+                EscrowCallParams
             )
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
