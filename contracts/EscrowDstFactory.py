@@ -194,7 +194,55 @@ def main():
 
             self.data.admin = init_params.admin
 
+        @sp.private(with_operations=True)
+        def TransferTokens(self, sender, receiver, amount, tokenAddress,id, faTwoFlag):
 
+            if faTwoFlag:
+                transferHandle = sp.contract(
+                    t.transfer_params,
+                    tokenAddress,
+                    "transfer"
+                )
+
+                TransferParam = [
+                            sp.record(
+                                from_ = sender,
+                                txs = [
+                                    sp.record(
+                                        to_         = receiver,
+                                        token_id    = id,
+                                        amount      = amount
+                                    )
+                                ]
+                            )
+                        ]
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
+
+            else:
+                TransferParam = sp.record(
+                    from_ = sender,
+                    to_ = receiver,
+                    value = amount
+                )
+
+                transferHandle = sp.contract(
+                    sp.record(from_=sp.address, to_=sp.address, value=sp.nat).layout(
+                    ("from_ as from", ("to_ as to", "value"))
+                    ),
+                    tokenAddress,
+                    "transfer"
+                    )
+
+                match transferHandle:
+                    case Some(contract):
+                        sp.transfer(TransferParam, sp.mutez(0), contract)
+                    case None:
+                        sp.trace("Failed to find contract")
 
         @sp.entry_point
         def changeAdmin(self, newAdmin):
@@ -218,6 +266,10 @@ def main():
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
 
+            self.TransferTokens(sp.record(
+                sender = sp.sender, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
+            ))
+
             newContract = sp.create_contract(
                 EscrowDst,
                 None,
@@ -229,6 +281,9 @@ def main():
                 )
             )
 
+            self.TransferTokens(sp.record(
+                sender = sp.self_address, receiver = newContract, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
+            ))
 
 
 
@@ -248,6 +303,8 @@ if "main" in __name__:
         orderHash = sp.pack("OrderId-1")
         secret = sp.bytes("0xa13c7be0e8f1b5b9926dc25f13c31476598e3e6012592f4e82633eb0be87a028")
         secret_hash = sp.keccak(secret)
+
+        scenario.h1("Destination Escrow Factory")
 
         destinationEscrowFactory = main.EscrowDstFactory(sp.record(admin = Bob.address))
         scenario += destinationEscrowFactory
