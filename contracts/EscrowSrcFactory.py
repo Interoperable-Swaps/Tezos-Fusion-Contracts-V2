@@ -1,3 +1,4 @@
+from importlib.metadata import entry_points
 # Source Escrow Factory.
 import smartpy as sp
 
@@ -303,6 +304,17 @@ def main():
             assert sp.sender == self.data.admin
 
             self.data.admin = newAdmin
+
+        @sp.entry_point
+        def rescueFunds(self, params):
+
+            sp.cast(params, sp.record(token = sp.address, tokenId = sp.nat, tokenType = sp.bool, amount = sp.nat))
+
+            assert sp.sender == self.data.admin
+
+            self.TransferTokens(sp.record(
+                sender = sp.self_address, receiver = self.data.admin, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
+            ))
 
 
         # TODO: Add Amount Check for Tez
