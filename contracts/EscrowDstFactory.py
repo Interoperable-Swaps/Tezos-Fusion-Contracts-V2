@@ -33,6 +33,10 @@ def main():
         taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
 
 
+    EscrowCallParams: type = sp.record(DstCancellation = sp.nat, DstPublicWithdrawal = sp.nat, DstWithdrawal = sp.nat, srcCancellationTimestamp = sp.timestamp,
+        amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes, safetyDeposit = sp.mutez,
+        taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
+
     class EscrowDst(sp.Contract):
 
         def __init__(self, init_params):
@@ -194,6 +198,18 @@ def main():
 
             self.data.admin = init_params.admin
 
+
+        @sp.private()
+        def CheckTimeStamps(self, DstCancellation, DstPublicWithdrawal, DstWithdrawal):
+
+            if DstCancellation > DstPublicWithdrawal:
+                if DstPublicWithdrawal > DstWithdrawal:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+
         @sp.private(with_operations=True)
         def TransferTokens(self, sender, receiver, amount, tokenAddress,id, faTwoFlag):
 
@@ -261,10 +277,14 @@ def main():
 
             sp.cast(
                 params,
-                EscrowInitParams
+                EscrowCallParams
             )
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
+            assert self.CheckTimeStamps((sp.record(DstCancellation = params.DstCancellation, DstPublicWithdrawal = params.DstPublicWithdrawal, DstWithdrawal = params.DstWithdrawal))), "INVALID_TIMESTAMP"
+
+            assert sp.add_seconds(sp.now, sp.to_int(params.DstCancellation)) > params.srcCancellationTimestamp, "DIFF"
 
             self.TransferTokens(sp.record(
                 sender = sp.sender, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
@@ -309,7 +329,7 @@ if "main" in __name__:
         destinationEscrowFactory = main.EscrowDstFactory(sp.record(admin = Bob.address))
         scenario += destinationEscrowFactory
 
-        destinationEscrowFactory.deployEscrowDst(sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10,
+        destinationEscrowFactory.deployEscrowDst(sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10, srcCancellationTimestamp = sp.timestamp(2),
             amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
             taker = Resolver.address,
             token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100), _amount = sp.tez(1))
