@@ -305,6 +305,8 @@ def main():
                 sender = sp.self_address, receiver = newContract, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
             ))
 
+            sp.emit(sp.record(newEscrow=newContract, orderHash=params.hash), tag="deployedDstEscrow", with_type=True)
+
 
 
 
