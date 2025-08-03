@@ -287,7 +287,7 @@ def main():
             assert sp.add_seconds(sp.now, sp.to_int(params.DstCancellation)) > params.srcCancellationTimestamp, "DIFF"
 
             self.TransferTokens(sp.record(
-                sender = sp.sender, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
+                sender = params.taker, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
             ))
 
             newContract = sp.create_contract(

@@ -332,7 +332,7 @@ def main():
             SrcWithdrawal = params.SrcWithdrawal)), "INVALID_TIMESTAMP"
 
             self.TransferTokens(sp.record(
-                sender = sp.sender, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
+                sender = params.maker, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
             ))
 
             newContract = sp.create_contract(
