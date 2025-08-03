@@ -270,8 +270,6 @@ def main():
             self.data.admin = newAdmin
 
 
-        # TODO: Add Amount Check for Tez
-        # TODO: Balance Transfer to Escrow
         @sp.entry_point
         def deployEscrowDst(self, params):
 
@@ -281,6 +279,8 @@ def main():
             )
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
+            assert params.safetyDeposit > sp.tez(1), "SMALL_AMOUNT"
 
             assert self.CheckTimeStamps((sp.record(DstCancellation = params.DstCancellation, DstPublicWithdrawal = params.DstPublicWithdrawal, DstWithdrawal = params.DstWithdrawal))), "INVALID_TIMESTAMP"
 
@@ -308,8 +308,6 @@ def main():
             sp.emit(sp.record(newEscrow=newContract, orderHash=params.hash), tag="deployedDstEscrow", with_type=True)
 
 
-
-
 if "main" in __name__:
 
     @sp.add_test()
@@ -332,9 +330,9 @@ if "main" in __name__:
         scenario += destinationEscrowFactory
 
         destinationEscrowFactory.deployEscrowDst(sp.record(DstCancellation = 20, DstPublicWithdrawal = 15, DstWithdrawal = 10, srcCancellationTimestamp = sp.timestamp(2),
-            amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
+            amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(10),
             taker = Resolver.address,
-            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100), _amount = sp.tez(1))
+            token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _now = sp.timestamp(100), _amount = sp.tez(10))
 
 
         # destinationEscrow = main.EscrowDst(

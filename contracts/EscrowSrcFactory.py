@@ -316,9 +316,6 @@ def main():
                 sender = sp.self_address, receiver = self.data.admin, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
             ))
 
-
-        # TODO: Add Amount Check for Tez
-        # TODO: Balance Transfer to Escrow
         @sp.entry_point
         def deployEscrowSrc(self, params):
 
@@ -328,6 +325,8 @@ def main():
             )
 
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
+
+            assert params.safetyDeposit > sp.tez(1), "SMALL_AMOUNT"
 
             assert self.CheckTimeStamps(sp.record(SrcCancellation = params.SrcCancellation, SrcPublicCancellation = params.SrcPublicCancellation, SrcPublicWithdrawal = params.SrcPublicWithdrawal,
             SrcWithdrawal = params.SrcWithdrawal)), "INVALID_TIMESTAMP"
@@ -379,9 +378,9 @@ if "main" in __name__:
         scenario += sourceEscrowFactory
 
         sourceEscrowFactory.deployEscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
-        amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
+        amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(10),
         taker = Resolver.address,
-        token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _amount = sp.tez(1))
+        token = Token.address, tokenId = 0, tokenType = False), _sender = Bob, _amount = sp.tez(10))
 
         # SourceEscrow = main.EscrowSrc(sp.record(SrcCancellation = 20, SrcPublicCancellation = 25, SrcPublicWithdrawal = 15, SrcWithdrawal = 10,
         # amount = 100, hash = secret_hash, maker = Maker.address, orderHash = orderHash, safetyDeposit = sp.tez(1),
