@@ -30,6 +30,10 @@ def main():
         amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes,
         safetyDeposit = sp.mutez, taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
 
+    EscrowDstCallParams: type = sp.record(DstCancellation = sp.nat, DstPublicWithdrawal = sp.nat, DstWithdrawal = sp.nat, srcCancellationTimestamp = sp.timestamp,
+        amount = sp.nat, hash = sp.bytes, maker = sp.address, orderHash = sp.bytes, safetyDeposit = sp.mutez,
+        taker = sp.address, token = sp.address, tokenId = sp.nat, tokenType = sp.bool)
+
     class LimitOrderProtocol(sp.Contract):
 
         def __init__(self, init_params):
@@ -72,9 +76,10 @@ def main():
 
             self.data.escrowDstFactory = newEscrowDstFactory
 
-        # @sp.entry_point
-        # def deployEscrowDst(self, params):
+        @sp.entry_point
+        def deployEscrowDst(self, params):
 
+            sp.cast(params, EscrowDstCallParams)
 
 
         @sp.entry_point
