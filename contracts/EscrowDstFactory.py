@@ -193,11 +193,11 @@ def main():
             # TokenHolder Access for public withdraw
             sp.cast(
                 init_params,
-                sp.record(admin = sp.address)
+                sp.record(admin = sp.address, LOP = sp.address)
             )
 
             self.data.admin = init_params.admin
-
+            self.data.LOP = init_params.LOP
 
         @sp.private()
         def CheckTimeStamps(self, DstCancellation, DstPublicWithdrawal, DstWithdrawal):
@@ -278,6 +278,8 @@ def main():
                 EscrowCallParams
             )
 
+            assert sp.sender == self.data.LOP, "NOT_LOP"
+
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
 
             assert params.safetyDeposit > sp.tez(1), "SMALL_AMOUNT"
@@ -305,7 +307,7 @@ def main():
                 sender = sp.self_address, receiver = newContract, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
             ))
 
-            sp.emit(sp.record(newEscrow=newContract, orderHash=params.hash), tag="deployedDstEscrow", with_type=True)
+            sp.emit(sp.record(newEscrow=newContract, orderHash = params.orderHash, hashLock=params.hash), tag="deployedDstEscrow", with_type=True)
 
 
 if "main" in __name__:

@@ -324,6 +324,8 @@ def main():
                 EscrowCallParams
             )
 
+            assert sp.sender == self.data.LOP, "NOT_LOP"
+
             assert sp.amount == params.safetyDeposit, "INVALID_AMOUNT"
 
             assert params.safetyDeposit > sp.tez(1), "SMALL_AMOUNT"
@@ -353,7 +355,7 @@ def main():
             ))
 
 
-            sp.emit(sp.record(newEscrow=newContract, orderHash=params.hash), tag="deployedSrcEscrow", with_type=True)
+            sp.emit(sp.record(newEscrow=newContract, orderHash=params.orderHash, hashLock = params.hash), tag="deployedSrcEscrow", with_type=True)
 
 if "main" in __name__:
 
