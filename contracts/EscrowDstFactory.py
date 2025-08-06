@@ -286,7 +286,7 @@ def main():
 
             assert self.CheckTimeStamps((sp.record(DstCancellation = params.DstCancellation, DstPublicWithdrawal = params.DstPublicWithdrawal, DstWithdrawal = params.DstWithdrawal))), "INVALID_TIMESTAMP"
 
-            assert sp.add_seconds(sp.now, sp.to_int(params.DstCancellation)) > params.srcCancellationTimestamp, "DIFF"
+            assert params.srcCancellationTimestamp > sp.add_seconds(sp.now, sp.to_int(params.DstCancellation)), "DIFF"
 
             self.TransferTokens(sp.record(
                 sender = params.taker, receiver = sp.self_address, amount = params.amount , tokenAddress = params.token,id = params.tokenId, faTwoFlag = params.tokenType
